@@ -103,6 +103,114 @@ void echo(unsigned char *sz,int size)
 	printf("\n");
 }
 
+void myth1(fhinstance instance){
+ int i,fd,status;
+ time_t timep;
+ struct tm *tp;
+
+ int c1[10];        //INT
+ int c1_len[10];
+
+ char c2[10][100];  //VARCHAR
+ int c2_len[10];
+
+ char c3[10][100];  //DATE
+ int c3_len[10];
+
+ char c4[10][100];  //DATETIME
+ int c4_len[10];
+
+ float c5[10];   //FLOAT
+ int c5_len[10];
+
+ double c6[10];  //DOUBLE
+ int c6_len[10];
+
+ char c7[10][LOBSIZE];  //TEXT
+ int c7_len[10];
+
+ unsigned char c8[10][LOBSIZE];  //CLOB
+ int c8_len[10];
+
+ char c9[10][100];  //BFILE
+ int c9_len[10];
+
+ unsigned char c10[10][LOBSIZE];
+ int c10_len[10];
+
+ FILE *mytext = fopen("/etc/passwd","rt");
+ FILE *myclob = fopen("/etc/services","rb");
+ FILE *myblob = fopen("cat.jpg","rb");
+
+ for (i = 0; i < 10; i++) {
+ c1[i] = i;
+
+ sprintf(c2[i],append("TEST STRING",itoa(i)));
+ c2_len[i] = strlen(c2[i]);
+
+ time(&timep);
+ tp = gmtime(&timep);
+ sprintf(c3[i],"%d-%d-%d",tp->tm_year+1900,tp->tm_mon+1,tp->tm_mday);
+ c3_len[i] = strlen(c3[i]);
+
+ sprintf(c4[i],nowtime_us());
+ c4_len[i] = strlen(c4[i]);
+
+ c5[i] = rand()/(double)(RAND_MAX/100);
+
+ c6[i] = rand()/(double)(RAND_MAX/100);
+
+ rewind(mytext);
+ status = fread(c7[i],sizeof(char),LOBSIZE,mytext);
+ c7_len[i] = status;
+
+ rewind(myclob);
+ status = fread(c8[i],sizeof(char),LOBSIZE,myclob);
+ c8_len[i] = status;
+
+ sprintf(c9[i],"KNIGHTDIR:cat.jpg");   // NEED DIRECTORY POINT TO HERE CREATED BY YOURSELF
+ c9_len[i] = strlen(c9[i]);
+
+ rewind(myblob);
+ status = fread(c10[i],sizeof(unsigned char),LOBSIZE,myblob);
+ c10_len[i] = status;
+ }
+
+ ret = fldr_bind_nth(instance, 1, FLDR_C_INT, NULL, NULL, c1, sizeof(int), 0, c1_len, 0);
+ chkerr(ret,instance,1); //FOR MAIN THREAD
+
+ ret = fldr_bind_nth(instance, 2, FLDR_C_CHAR, NULL, NULL, c2, 100, 100*10, c2_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 3, FLDR_C_CHAR, "YYYY-MM-DD", NULL, c3, 100, 100*10, c3_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 4, FLDR_C_CHAR, "YYYY-MM-DD HH:MI:SS.FF6", NULL, c4, 100, 100*10, c4_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 5, FLDR_C_FLOAT, NULL, NULL, c5, sizeof(float), 0, c5_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 6, FLDR_C_DOUBLE, NULL, NULL, c6, sizeof(double), 0, c6_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 7, FLDR_C_CHAR, NULL, NULL, c7, LOBSIZE, LOBSIZE*10, c7_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 8, FLDR_C_BINARY, NULL, NULL, c8, LOBSIZE, LOBSIZE*10, c8_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 9, FLDR_C_CHAR, NULL, NULL, c9, 100, 100*10, c9_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_bind_nth(instance, 10, FLDR_C_BINARY, NULL, NULL, c10, LOBSIZE, LOBSIZE*10, c10_len, 0);
+ chkerr(ret,instance,1);
+
+ ret = fldr_sendrows_nth(instance, 10, 0, 1);
+ chkerr(ret,instance,1);
+}
+
+
 int main() 
 { 
  fhinstance instance; 
@@ -115,8 +223,6 @@ int main()
  int i,fd,status; 
  time_t timep;
  struct tm *tp;
-
-/* variables for thread 1 */
 
  int c1[10];        //INT
  int c1_len[10]; 
